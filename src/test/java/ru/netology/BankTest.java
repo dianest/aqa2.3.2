@@ -159,7 +159,7 @@ public class BankTest {
         final User user = UserGenerator.getUser(UserGenerator.UserType.BLOCKED_WRONG_NAME_AND_PASSWORD);
         submitForm(user);
 
-        final SelenideElement account = $("[data-test-id=error-notification-missing]");
+        final SelenideElement account = $("[data-test-id=error-notification]");
         account.waitUntil(Condition.visible, 5000).
                 shouldHave(text("Ошибка! Неверно указан логин или пароль"));
 
