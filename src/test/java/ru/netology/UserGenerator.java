@@ -1,11 +1,25 @@
 package ru.netology;
 
 import com.github.javafaker.Faker;
+import io.restassured.builder.RequestSpecBuilder;
+import io.restassured.filter.log.LogDetail;
+import io.restassured.http.ContentType;
+import io.restassured.specification.RequestSpecification;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import static io.restassured.RestAssured.given;
+
 public class UserGenerator {
+    private static final RequestSpecification requestSpec = new RequestSpecBuilder()
+            .setBaseUri("http://localhost")
+            .setPort(9999)
+            .setAccept(ContentType.JSON)
+            .setContentType(ContentType.JSON)
+            .log(LogDetail.ALL)
+            .build();
+
     private static final Map<UserType, User> users = new HashMap<>();
     private static final Faker faker = new Faker();
 
@@ -51,9 +65,58 @@ public class UserGenerator {
         users.put(UserType.BLOCKED_WRONG_NAME_AND_PASSWORD, blockedWrongNameAndPasswordUser);
     }
 
-    private UserGenerator() {}
+    private UserGenerator() {
+    }
 
-    public static User getUser(UserType userType) {
+    public static void registerActiveUser() {
+        registerUser(getUser(UserType.ACTIVE));
+    }
+
+    public static void registerBlockedUser() {
+        registerUser(getUser(UserType.BLOCKED));
+    }
+
+    public static User getActiveUser() {
+        return getUser(UserType.ACTIVE);
+    }
+
+    public static User getBlockedUser() {
+        return getUser(UserType.BLOCKED);
+    }
+
+    public static User getActiveNotExistingUser() {
+        return getUser(UserType.ACTIVE_NOT_EXISTING);
+    }
+
+    public static User getBlockedNotExistingUser() {
+        return getUser(UserType.BLOCKED_NOT_EXISTING);
+    }
+
+    public static User getActiveWrongNameUser() {
+        return getUser(UserType.ACTIVE_WRONG_NAME);
+    }
+
+    public static User getActiveWrongPasswordUser() {
+        return getUser(UserType.ACTIVE_WRONG_PASSWORD);
+    }
+
+    public static User getActiveWrongNameAndPasswordUser() {
+        return getUser(UserType.ACTIVE_WRONG_NAME_AND_PASSWORD);
+    }
+
+    public static User getBlockedWrongNameUser() {
+        return getUser(UserType.BLOCKED_WRONG_NAME);
+    }
+
+    public static User getBlockedWrongPasswordUser() {
+        return getUser(UserType.BLOCKED_WRONG_PASSWORD);
+    }
+
+    public static User getBlockedWrongNameAndPasswordUser() {
+        return getUser(UserType.BLOCKED_WRONG_NAME_AND_PASSWORD);
+    }
+
+    private static User getUser(UserType userType) {
         return users.get(userType);
     }
 
@@ -63,6 +126,16 @@ public class UserGenerator {
                 faker.internet().password(),
                 "active"
         );
+    }
+
+    private static void registerUser(User user) {
+        given()
+                .spec(requestSpec)
+                .body(user)
+                .when()
+                .post("/api/system/users")
+                .then()
+                .statusCode(200);
     }
 
     public enum UserType {
